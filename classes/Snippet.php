@@ -1,6 +1,6 @@
 <?php
 
-class Banner{
+class Snippet{
     public $id;
     public $title;
     public $date;
@@ -8,6 +8,7 @@ class Banner{
     public $post;
     public $postUrl;
     public $url;
+    public $snippet;
 
     public function __construct($post=false){
         if($post){
@@ -21,17 +22,12 @@ class Banner{
         $this->title = $this->post->post_title;
         $this->date = $this->post->post_date;
         $this->postUrl = get_post_permalink($this->id);
-        $this->url = trim($this->post->post_excerpt);
-        $this->thumbId = get_post_thumbnail_id( $this->id );
-        $imageURLParts = wp_get_attachment_image_src( get_post_thumbnail_id( $this->id ), 'single-post-thumbnail' );
-        if($imageURLParts){
-            $this->imageURL = $imageURLParts[0];
-        }
+        $this->snippet = get_post_meta($this->id,'snippet',true);
     }
 
     public function getMostRecent(){
         $args = array(
-            'post_type' => 'jkbanner',
+            'post_type' => 'jksnippet',
             'posts_per_page' => '1',
         );
         $query = new WP_Query( $args );
@@ -43,7 +39,7 @@ class Banner{
 
     public function getByPostId($id){
         $args = array(
-            'post_type' => 'jkbanner',
+            'post_type' => 'jksnippet',
             'posts_per_page' => '1',
             'p' => $id
         );
@@ -54,10 +50,17 @@ class Banner{
         }
     }
 
+    public function getBySlug($slug){
+        $this->post = get_page_by_path( $slug, OBJECT, 'jksnippet' );
+        if($this->post) {
+            $this->setupFromPost();
+        }
+    }
+
     public static function getAll($argOverrides=array()){
         $posts = array();
         $args = array(
-            'post_type' => 'jkbanner',
+            'post_type' => 'jksnippet',
             'posts_per_page' => '-1',
         );
         $args = array_merge($args, $argOverrides);
